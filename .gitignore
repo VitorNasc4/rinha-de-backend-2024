@@ -1,0 +1,101 @@
+## Ignorar arquivos e pastas padrão do .NET
+
+# Pastas de build
+bin/
+obj/
+out/
+
+# Arquivos de projeto
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ferramentas de cobertura de código
+coverage/
+*.coveragexml
+
+# Arquivos de pacote
+# O diretório `packages` pode ser removido se você usar o restore de pacote do NuGet
+**/[Pp]ackages/*
+**/package-lock.json
+**/project.lock.json
+**/[Pp]roject.[Aa]ssets.[Jj]son
+**/*.paket
+paket-files/
+
+# Arquivos de repositórios de ferramentas como o ReSharper
+**/.vs
+**/.vscode
+**/*.user
+**/*.idea
+**/*.swp
+**/*.swo
+**/*.*~
+**/.DS_Store
+
+# Arquivos temporários
+**/._*
+**/*.dbmdl
+**/*.dbmdl~
+**/*.jfm
+**/*.jfm~
+**/*.tlog
+**/*.tmp
+**/*.log
+**/*.bak
+**/*.cache
+**/*.trx
+**/*.vsp
+**/*.vspx
+**/._ReSharper*/
+**/*.[Rr]es[Ss]harper
+**/*.ncrunch*
+**/*.NCrunch*
+**/*.ndproj
+**/*.axo
+**/*.suo
+**/*.nto
+**/*.err
+**/*.userprefs
+**/*.pidb
+**/*.svclog
+**/*.scc
+
+# Arquivos de saída
+**/[Oo]bj/
+**/[Bb]in/
+**/[Ll]og/
+**/[Tt]est[Rr]esult*/
+**/[Bb]uild[Ll]og.*
+**/*.[Pp]ublish.xml
+**/*.azurePubxml
+**/azurerm-deploy.json
+
+# Outros arquivos e pastas
+**/.paket
+**/*.pem
+**/*.usercert
+*.pubxml.user
+microsoft-usersecrets-*
+**/*.rptproj.user
+
+# Arquivos de ambiente
+*.env
+*.env.local
+*.env.*.local
+
+# Pasta de artefatos
+artifacts/
+
+# Ignore arquivos específicos do Visual Studio Code
+.history/
+.settings/
+
+# Ignore o arquivo de banco de dados SQLite se estiver usando
+*.db
+*.sqlite
+
+# Ignore arquivos específicos do Rider
+.idea/
