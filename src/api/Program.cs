@@ -15,10 +15,12 @@ builder.Services.AddEntityFrameworkNpgsql()
     (option =>
     option.UseNpgsql("Host=localhost;Port=5435;Database=rinha;Username=admin;Password=123"));
 
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+ApplyMigrations(app);
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -112,5 +114,13 @@ app.MapGet("/clients/{id}/extrato", async (int id, Context context) =>
   return Results.Ok(retornoExtrato);
 });
 
-
 app.Run();
+
+void ApplyMigrations(IApplicationBuilder app)
+{
+  using (var scope = app.ApplicationServices.CreateScope())
+  {
+    var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
+    dbContext.Database.Migrate();
+  }
+}

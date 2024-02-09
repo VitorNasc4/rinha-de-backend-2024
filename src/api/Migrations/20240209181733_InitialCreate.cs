@@ -12,21 +12,26 @@ namespace api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Clientes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Limite = table.Column<int>(type: "integer", nullable: false),
-                    Saldo = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Clientes", x => x.Id);
-                });
+            var verificaClientes = @"
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT FROM pg_tables
+                        WHERE  schemaname = 'public'
+                        AND    tablename  = 'Clientes'
+                    ) THEN
+                        CREATE TABLE public.""Clientes"" (
+                            ""Id"" SERIAL PRIMARY KEY,
+                            ""Limite"" INTEGER NOT NULL,
+                            ""Saldo"" INTEGER NOT NULL,
+                            ""CreatedAt"" TIMESTAMP WITH TIME ZONE NOT NULL,
+                            ""UpdatedAt"" TIMESTAMP WITH TIME ZONE NOT NULL
+                        );
+                    END IF;
+                END$$;
+                ";
+
+            migrationBuilder.Sql(verificaClientes);
 
             migrationBuilder.CreateTable(
                 name: "Transacoes",
