@@ -12,7 +12,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<Context>
     (option =>
-    option.UseNpgsql("Host=db;Port=5432;Database=rinha;Username=admin;Password=123"));
+    option.UseNpgsql("Host=localhost;Port=5435;Database=rinha;User Id=admin;Password=123"));
 
 
 builder.Services.AddSwaggerGen();
