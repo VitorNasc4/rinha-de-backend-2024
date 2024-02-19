@@ -12,7 +12,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<Context>
     (option =>
-    option.UseNpgsql("Host=localhost;Port=5435;Database=rinha;User Id=admin;Password=123"));
+    option.UseNpgsql("Host=db;Port=5432;Database=rinha;User Id=admin;Password=123"));
 
 
 builder.Services.AddSwaggerGen();
@@ -119,7 +119,15 @@ void ApplyMigrations(IApplicationBuilder app)
 {
   using (var scope = app.ApplicationServices.CreateScope())
   {
-    var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-    dbContext.Database.Migrate();
+    try
+    {
+      var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
+      dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+      var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+      logger.LogError(ex, "Ocorreu um erro ao aplicar as Migrations");
+    }
   }
 }
