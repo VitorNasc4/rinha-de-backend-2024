@@ -23,7 +23,7 @@ ApplyMigrations(app);
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.MapPost("/clients/{id}/transacoes", async (int id, CreateTranscaoDTO transacaoModel, Context context, IMapper mapper) =>
+app.MapPost("/clientes/{id}/transacoes", async (int id, CreateTranscaoDTO transacaoModel, Context context, IMapper mapper) =>
 {
   if (!transacaoModel.IsValid())
   {
@@ -72,7 +72,7 @@ app.MapPost("/clients/{id}/transacoes", async (int id, CreateTranscaoDTO transac
   });
 });
 
-app.MapGet("/clients/{id}/extrato", async (int id, Context context) =>
+app.MapGet("/clientes/{id}/extrato", async (int id, Context context) =>
 {
   var extrato = await context.Clientes!
     .Where(cli => cli.Id == id)
