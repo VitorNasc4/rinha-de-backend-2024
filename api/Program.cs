@@ -12,7 +12,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<Context>
     (option =>
-    option.UseNpgsql("Host=db;Port=5432;Database=rinha;User Id=admin;Password=123"));
+    option.UseNpgsql("Host=localhost;Port=5432;Database=rinha;User Id=admin;Password=123;Minimum Pool Size=10;Maximum Pool Size=2000;Multiplexing=true;"));
 
 
 builder.Services.AddSwaggerGen();
@@ -23,6 +23,15 @@ ApplyMigrations(app);
 app.UseSwagger();
 app.UseSwaggerUI();
 
+var clientes = new Dictionary<int, int>
+{
+    {1,   1000 * 100},
+    {2,    800 * 100},
+    {3,  10000 * 100},
+    {4, 100000 * 100},
+    {5,   5000 * 100}
+};
+
 app.MapPost("/clientes/{id}/transacoes", async (int id, CreateTranscaoDTO transacaoModel, Context context, IMapper mapper) =>
 {
   if (!transacaoModel.IsValid())
@@ -30,25 +39,33 @@ app.MapPost("/clientes/{id}/transacoes", async (int id, CreateTranscaoDTO transa
     return Results.BadRequest("Transação inválida.");
   }
 
-  await using var requisicao = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-
-  var cliente = await context.Clientes!.Include(c => c.Transacoes)
-    .FirstOrDefaultAsync(c => c.Id == id);
-  if (cliente == null)
+  if (!clientes.ContainsKey(id))
   {
     return Results.NotFound("Cliente não encontrado.");
   }
 
+  var limite = clientes[id];
   var transacao = mapper.Map<Transacao>(transacaoModel);
+  transacao.IdCliente = id;
 
-  cliente.Transacoes ??= new List<Transacao>();
-  cliente.Transacoes.Add(transacao);
+  await using var requisicao = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+  var cliente = await context.Clientes!.FirstAsync(c => c.Id == id);
 
   if (transacao.Tipo == "c")
   {
     cliente.Saldo += transacao.Valor;
+    context.Transacoes!.Add(transacao);
+    await context.SaveChangesAsync();
+    await requisicao.CommitAsync();
+
+    return Results.Ok(new ReturnTransacoesDTO
+    {
+      Saldo = cliente.Saldo,
+      Limite = limite
+    });
   }
-  else if (cliente.Saldo - transacao.Valor < -cliente.Limite)
+
+  if (cliente.Saldo - transacao.Valor < -limite)
   {
     return Results.Problem(new ProblemDetails
     {
@@ -57,10 +74,9 @@ app.MapPost("/clientes/{id}/transacoes", async (int id, CreateTranscaoDTO transa
       Detail = "A transação excede o limite de saldo disponível do cliente."
     });
   }
-  else
-  {
-    cliente.Saldo -= transacao.Valor;
-  }
+
+  cliente.Saldo -= transacao.Valor;
+  context.Transacoes!.Add(transacao);
 
   await context.SaveChangesAsync();
   await requisicao.CommitAsync();
@@ -68,20 +84,27 @@ app.MapPost("/clientes/{id}/transacoes", async (int id, CreateTranscaoDTO transa
   return Results.Ok(new ReturnTransacoesDTO
   {
     Saldo = cliente.Saldo,
-    Limite = cliente.Limite
+    Limite = limite
   });
 });
 
 app.MapGet("/clientes/{id}/extrato", async (int id, Context context) =>
 {
+  if (!clientes.ContainsKey(id))
+  {
+    return Results.NotFound("Cliente não encontrado.");
+  }
+  var limite = clientes[id];
+
   var extrato = await context.Clientes!
     .Where(cli => cli.Id == id)
     .Select(cli => new
     {
       Saldo = cli.Saldo,
-      Limite = cli.Limite,
+      Limite = limite,
       Data_Extrato = DateTime.Now,
-      Ultimas_Transacoes = cli.Transacoes!
+      Ultimas_Transacoes = context.Transacoes!
+        .Where(t => t.IdCliente == id)
         .OrderByDescending(t => t.CreatedAt)
         .Take(10)
         .Select(t => new ReadTransacoesDTO
@@ -94,16 +117,11 @@ app.MapGet("/clientes/{id}/extrato", async (int id, Context context) =>
     })
     .FirstOrDefaultAsync();
 
-  if (extrato == null)
-  {
-    return Results.NotFound("Cliente não encontrado.");
-  }
-
   var retornoExtrato = new returnExtratoDTO()
   {
     Saldo = new ReadSaldoDTO()
     {
-      Total = extrato.Saldo,
+      Total = extrato!.Saldo,
       Limite = extrato.Limite,
       Data_Extrato = extrato.Data_Extrato
     },

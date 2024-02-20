@@ -11,7 +11,7 @@ namespace api.DTOs
             {
                 return false;
             }
-            if (string.IsNullOrEmpty(Descricao))
+            if (string.IsNullOrEmpty(Descricao) || Descricao.Length > 10)
             {
                 return false;
             }
