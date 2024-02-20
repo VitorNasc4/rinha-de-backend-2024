@@ -6,22 +6,19 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
-    environment:
-      - ASPNETCORE_URLS=http://+:3000
+    ports:
+      - "8081:8080"
+    expose:
+      - 80
     depends_on:
       db:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: "90MB"
 
   api02:
     <<: *api
     container_name: api02
-    depends_on:
-      - api01
+    ports:
+      - "8082:8080"
 
   nginx:
     image: nginx:latest
@@ -31,11 +28,6 @@ services:
       - api01
     ports:
       - "9999:9999"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.2"
-          memory: "70MB"
 
   db:
     image: postgres:latest
@@ -55,11 +47,6 @@ services:
       retries: 3
     volumes:
       - ./script.sql:/docker-entrypoint-initdb.d/script.sql
-    deploy:
-      resources:
-        limits:
-          cpus: "0.8"
-          memory: "300MB"
 
 networks:
   default:

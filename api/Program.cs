@@ -12,14 +12,14 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<Context>
     (option =>
-    option.UseNpgsql("Host=localhost;Port=5432;Database=rinha;User Id=admin;Password=123;Minimum Pool Size=10;Maximum Pool Size=2000;Multiplexing=true;"));
+    option.UseNpgsql("Host=db;Port=5432;Database=rinha;User Id=admin;Password=123;Minimum Pool Size=10;Maximum Pool Size=2000;Multiplexing=true;"));
 
 
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-ApplyMigrations(app);
+// ApplyMigrations(app);
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -133,19 +133,19 @@ app.MapGet("/clientes/{id}/extrato", async (int id, Context context) =>
 
 app.Run();
 
-void ApplyMigrations(IApplicationBuilder app)
-{
-  using (var scope = app.ApplicationServices.CreateScope())
-  {
-    try
-    {
-      var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
-      dbContext.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-      var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-      logger.LogError(ex, "Ocorreu um erro ao aplicar as Migrations");
-    }
-  }
-}
+// void ApplyMigrations(IApplicationBuilder app)
+// {
+//   using (var scope = app.ApplicationServices.CreateScope())
+//   {
+//     try
+//     {
+//       var dbContext = scope.ServiceProvider.GetRequiredService<Context>();
+//       dbContext.Database.Migrate();
+//     }
+//     catch (Exception ex)
+//     {
+//       var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//       logger.LogError(ex, "Ocorreu um erro ao aplicar as Migrations");
+//     }
+//   }
+// }

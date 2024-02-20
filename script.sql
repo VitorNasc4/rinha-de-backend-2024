@@ -8,9 +8,22 @@ BEGIN
             "UpdatedAt" TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
         );
     END IF;
+
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = 'Transacoes') THEN
+        CREATE TABLE public."Transacoes" (
+            "Id" SERIAL PRIMARY KEY,
+            "Valor" DECIMAL NOT NULL,
+            "Tipo" VARCHAR NOT NULL,
+            "Descricao" VARCHAR NOT NULL,
+            "IdCliente" INTEGER NOT NULL, 
+            "CreatedAt" TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+            "UpdatedAt" TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+            FOREIGN KEY ("IdCliente") REFERENCES public."Clientes"("Id")
+        );
+    END IF;
 END $$;
 
-INSERT INTO public."Clientes" ("Id", "Limite", "Saldo", "CreatedAt", "UpdatedAt")
+INSERT INTO public."Clientes" ("Id", "Saldo", "CreatedAt", "UpdatedAt")
 VALUES
     (1, 0, now(), now()),
     (2, 0, now(), now()),
